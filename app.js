@@ -51,10 +51,12 @@ app.post("/register", async function (req, res) {
     var flag = 1;
     var hashedP;
     // console.log(req);
+    console.log(req.body);
     bcrypt
             .hash(req.body.password, saltRounds)
             .then(async (hash) => {
-                // console.log('Hash ', hash)
+                console.log('Hash ', hash)
+                
                 hashedP = hash;
                 while (flag) {
                     try {
