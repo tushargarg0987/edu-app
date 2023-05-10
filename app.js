@@ -7,6 +7,7 @@ const session = require("express-session");
 const findOrCreate = require("mongoose-findorcreate");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
+require('dotenv').config();
 
 const app = express();
 
@@ -18,10 +19,11 @@ app.use(
         secret: "livestreamApp",
         resave: false,
         saveUninitialized: true,
+        // cookie: { secure: true }
     })
 );
 
-mongoose.connect("mongodb://localhost:27017/streamApp");
+mongoose.connect(process.env.DB_URL);
 
 const userSchema = new mongoose.Schema({
     username: {type: String, required: true,unique: true },
@@ -34,8 +36,18 @@ userSchema.plugin(findOrCreate);
 
 const User = new mongoose.model("User", userSchema);
 
+app.get("/", function (req, res) {
+    res.render("register");
+});
 
-// To fetch the user data
+app.get("/login", function (req, res) {
+    res.render("login");
+});
+
+app.get("/register", function (req, res) {
+    res.render("register");
+});
+
 app.get("/userdata", function (req, res) {
     User.find({ username: req.query.username }, function (err, foundUser) {
         console.log(foundUser[0]);
@@ -43,14 +55,14 @@ app.get("/userdata", function (req, res) {
     })
 })
 
-
-// To register new user [input - {username,password}, output - (Registered - for success and Username already taken - if username already taken)]
 app.post("/register", async function (req, res) {
     var flag = 1;
     var hashedP;
+    // console.log(req);
     bcrypt
             .hash(req.body.password, saltRounds)
             .then(async (hash) => {
+                // console.log('Hash ', hash)
                 hashedP = hash;
                 while (flag) {
                     try {
@@ -61,13 +73,13 @@ app.post("/register", async function (req, res) {
                         });
                         await user.save();
                         flag = 0;
-                        res.send("Registered");
+                        res.redirect("/register");
                     }
                     catch (err) {
                         if (err.keyValue.username) {
                             console.log(err);
                             flag = 0;
-                            res.send("Username already taken");
+                            res.redirect("/register");
                         }
                         else if (err.keyValue.referralcode) {
                             flag = 1;
@@ -79,32 +91,27 @@ app.post("/register", async function (req, res) {
     
 });
 
-// To login a user [input - {username,password}, output - (Success or Fail)]
+
 app.post("/login", function (req, res) {
     User.find({ username: req.body.username }, async function (err,foundUser) {
-        if (foundUser[0]) {
-            const hash = foundUser[0].password;
-                bcrypt
-                    .compare(req.body.password, hash)
-                    .then(response => {
-                        // console.log(response) // return true
-                        if (response) {
-                            res.send("Success");
-                        }
-                        else {
-                            res.send("Fail");
-                        }
-                    })
-                    .catch(err => console.error(err.message))
-                
-            
-        }
-        else {
-            res.send("User not found");
-        }
+        const hash = foundUser[0].password;
+        bcrypt
+            .compare(req.body.password, hash)
+            .then(res => {
+                console.log(res) // return true
+                if (res) {
+                    console.log("Success");
+                }
+                else {
+                    console.log("Fail");
+                }
+            })
+            .catch(err => console.error(err.message))
+        
     })
+    res.redirect('/login');
 });
 
-app.listen(3000, function () {
-    console.log("Server started at port 3000");
+app.listen(process.env.PORT || 3000, function () {
+    console.log("Server started ");
 });
