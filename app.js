@@ -37,15 +37,7 @@ userSchema.plugin(findOrCreate);
 const User = new mongoose.model("User", userSchema);
 
 app.get("/", function (req, res) {
-    res.render("register");
-});
-
-app.get("/login", function (req, res) {
-    res.render("login");
-});
-
-app.get("/register", function (req, res) {
-    res.render("register");
+    res.send("Hello");
 });
 
 app.get("/userdata", function (req, res) {
@@ -73,13 +65,13 @@ app.post("/register", async function (req, res) {
                         });
                         await user.save();
                         flag = 0;
-                        res.redirect("/register");
+                        res.send("Registered");
                     }
                     catch (err) {
                         if (err.keyValue.username) {
                             console.log(err);
                             flag = 0;
-                            res.redirect("/register");
+                            res.send("Invalid User");
                         }
                         else if (err.keyValue.referralcode) {
                             flag = 1;
@@ -94,22 +86,24 @@ app.post("/register", async function (req, res) {
 
 app.post("/login", function (req, res) {
     User.find({ username: req.body.username }, async function (err,foundUser) {
-        const hash = foundUser[0].password;
+        if (foundUser[0]) {
+            const hash = foundUser[0].password;
         bcrypt
             .compare(req.body.password, hash)
-            .then(res => {
-                console.log(res) // return true
-                if (res) {
-                    console.log("Success");
+            .then(response => {
+                if (response) {
+                    res.send("Success");
                 }
                 else {
-                    console.log("Fail");
+                    res.send("Fail");
                 }
             })
             .catch(err => console.error(err.message))
-        
+        }
+        else {
+            res.send("Fail");
+        }
     })
-    res.redirect('/login');
 });
 
 app.listen(process.env.PORT || 3000, function () {
