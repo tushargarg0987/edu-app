@@ -41,7 +41,13 @@ const courseSchema = new mongoose.Schema({
             classId: String,
             classNumber: String,
             classTitle: String,
-            classUrl: String
+            classUrl: String,
+            classChat: [
+                {
+                    username: String,
+                    message: String
+                }
+            ]
         }
     ]
 });
@@ -151,6 +157,28 @@ app.post('/addCourse', async (req,res) => {
             res.send("Unexpected error");
         }
     }
+})
+
+app.post('/addToChat', (req,res) => {
+    Course.find({ courseId: req.body.courseId }, (err,foundCourse) => {
+        if (foundCourse[0]) {
+            var classData = foundCourse[0].classes.find(function (classData){
+                return classData.classId === req.body.classId;
+            });
+            classData.classChat.push(req.body.chat);
+            const allClassData = foundCourse[0].classes.filter((classData) => {
+                return classData.classId !== req.body.classId;
+            })
+            allClassData.push(classData);
+            Course.findOneAndUpdate({ courseId: req.body.courseId },{
+                classes: allClassData
+            })
+            res.send("Added");
+        }
+        else {
+            res.send('Course not found');
+        }
+    })
 })
 
 app.post('/subscribeCourse', (req,res) => {
