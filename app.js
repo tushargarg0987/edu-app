@@ -20,7 +20,6 @@ app.use(
         secret: "livestreamApp",
         resave: false,
         saveUninitialized: true,
-        // cookie: { secure: true }
     })
 );
 
@@ -30,12 +29,35 @@ const userSchema = new mongoose.Schema({
     username: {type: String, required: true,unique: true },
     password: String,
     referralcode: { type: String, required: true, unique: true },
-    refernumber: String
+    refernumber: String,
+    courses: []
 });
+
+const courseSchema = new mongoose.Schema({
+    courseId: {type: String, required: true,unique: true },
+    courseName: String,
+    classes: [
+        {
+            classId: String,
+            classNumber: String,
+            classTitle: String,
+            classUrl: String
+        }
+    ]
+});
+
+const paymentSchema = new mongoose.Schema({
+    paymentId: { type: String, required: true, unique: true },
+    username: String,
+    amount: String,
+    forCourse : String,
+})
 
 userSchema.plugin(findOrCreate);
 
 const User = new mongoose.model("User", userSchema);
+const Course = new mongoose.model("Course", courseSchema);
+const Payment = new mongoose.model("Payment", paymentSchema);
 
 app.get("/", function (req, res) {
     res.send("Hello");
@@ -108,6 +130,88 @@ app.post("/login", function (req, res) {
         }
     })
 });
+
+app.post('/addCourse', async (req,res) => {
+    try {
+        const data = req.body;
+        var newCourse = new Course({
+            courseId: data.courseId,
+            courseName: data.courseName,
+            classes: data.classes
+        })
+        await newCourse.save();
+        res.send("Added");
+    }
+    catch (err) {
+        if (err.keyValue.courseId) {
+            res.send("Invalid CourseId");
+        }
+        else {
+            console.log(err);
+            res.send("Unexpected error");
+        }
+    }
+})
+
+app.post('/subscribeCourse', (req,res) => {
+    User.find({ username: req.body.username }, (err,foundUser) => {
+        if (foundUser[0]) {
+            const courses = foundUser[0].courses;
+            courses.push(req.body.courseId);
+            User.findOneAndUpdate({ username: req.body.username },{
+                courses: courses
+            })
+            res.send("Updated");
+        }
+        else {
+            res.send('User not found');
+        }
+    })
+})
+
+app.get('/courseData', (req,res) => {
+    Course.find({ courseId: req.body.courseId },(err,foundCourse)=> {
+        if (foundCourse[0]) {
+            res.send(foundCourse[0]);
+        }
+        else {
+            res.send("Course not found");
+        }
+    })
+})
+
+app.post('/addPayment', async (req, res) => {
+    try {
+        const data = req.body;
+        var newPayment = new Payment({
+            paymentId: data.paymentId,
+            username: data.username,
+            amount: data.amount,
+
+        })
+        await newPayment.save();
+    }
+    catch (err) {
+        if (err.keyValue.paymentId) {
+            res.send("Invalid PaymentId");
+        }
+        else {
+            console.log(err);
+            res.send("Unexpected error");
+        }
+    }
+});
+
+app.get('/userPayments', (req, res) => {
+    Payment.find({ username: req.body.username }, (err, foundpayments) => {
+        if (foundpayments[0]) {
+            res.send(foundpayments);
+        }
+        else {
+            res.send("No payments")
+        }
+    })
+})
 
 app.listen(process.env.PORT || 3000, function () {
     console.log("Server started ");
