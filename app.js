@@ -23,7 +23,7 @@ app.use(
     })
 );
 
-mongoose.connect("mongodb+srv://tushargarg0987:tushargarg@cluster0.7clzuuu.mongodb.net/?retryWrites=true&w=majority");
+mongoose.connect("mongodb+srv://theinternbay:theinternbay@cluster0.txhbnro.mongodb.net/?retryWrites=true&w=majority");
 
 const userSchema = new mongoose.Schema({
     username: {type: String, required: true,unique: true },
