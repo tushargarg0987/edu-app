@@ -6,13 +6,15 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const findOrCreate = require("mongoose-findorcreate");
 const bcrypt = require("bcrypt");
+const cors = require('cors')
 const saltRounds = 10;
 require('dotenv').config();
 
 const app = express();
 
-app.use(express.static("public"));
-app.set("view engine", "ejs");
+app.use(cors());
+// app.use(express.static("public"));
+// app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(
@@ -30,7 +32,7 @@ const userSchema = new mongoose.Schema({
     password: String,
     referralcode: { type: String, required: true, unique: true },
     refernumber: String,
-    courses: []
+    courses: [String]
 });
 
 const courseSchema = new mongoose.Schema({
@@ -79,13 +81,11 @@ app.get("/userdata", function (req, res) {
 app.post("/register", async function (req, res) {
     var flag = 1;
     var hashedP;
-    // console.log(req);
     console.log(req.body);
     bcrypt
             .hash(req.body.password, saltRounds)
             .then(async (hash) => {
                 console.log('Hash ', hash)
-                
                 hashedP = hash;
                 while (flag) {
                     try {
@@ -111,7 +111,6 @@ app.post("/register", async function (req, res) {
                 }
             })
             .catch(err => console.error(err.message))
-    
 });
 
 
