@@ -199,7 +199,7 @@ app.post('/subscribeCourse', (req,res) => {
 })
 
 app.get('/courseData', (req,res) => {
-    Course.find({ courseId: req.body.courseId },(err,foundCourse)=> {
+    Course.find({ courseId: req.query.courseId },(err,foundCourse)=> {
         if (foundCourse[0]) {
             res.send(foundCourse[0]);
         }
@@ -216,7 +216,6 @@ app.post('/addPayment', async (req, res) => {
             paymentId: data.paymentId,
             username: data.username,
             amount: data.amount,
-
         })
         await newPayment.save();
     }
