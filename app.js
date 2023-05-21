@@ -25,7 +25,7 @@ app.use(
     })
 );
 
-mongoose.connect("mongodb://localhost:27017/streamApp");
+mongoose.connect("mongodb+srv://theinternbay:theinternbay@cluster0.txhbnro.mongodb.net/?retryWrites=true&w=majority");
 
 const userSchema = new mongoose.Schema({
     username: {type: String, required: true,unique: true },
