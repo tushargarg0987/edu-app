@@ -25,7 +25,7 @@ app.use(
     })
 );
 
-mongoose.connect("mongodb+srv://theinternbay:theinternbay@cluster0.txhbnro.mongodb.net/?retryWrites=true&w=majority");
+mongoose.connect("mongodb://localhost:27017/streamApp");
 
 const userSchema = new mongoose.Schema({
     username: {type: String, required: true,unique: true },
@@ -171,7 +171,7 @@ app.post('/addToChat', (req,res) => {
             allClassData.push(classData);
             Course.findOneAndUpdate({ courseId: req.body.courseId },{
                 classes: allClassData
-            })
+            },null,()=>{})
             res.send("Added");
         }
         else {
@@ -184,10 +184,12 @@ app.post('/subscribeCourse', (req,res) => {
     User.find({ username: req.body.username }, (err,foundUser) => {
         if (foundUser[0]) {
             const courses = foundUser[0].courses;
+            console.log(courses);
             courses.push(req.body.courseId);
+            console.log(courses);
             User.findOneAndUpdate({ username: req.body.username },{
                 courses: courses
-            })
+            },null,()=>{})
             res.send("Updated");
         }
         else {
