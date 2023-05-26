@@ -12,6 +12,9 @@ require('dotenv').config();
 
 const app = express();
 
+var http = require('http').Server(app)
+var io = require('socket.io')(http)
+
 app.use(cors());
 // app.use(express.static("public"));
 // app.set("view engine", "ejs");
@@ -241,6 +244,24 @@ app.get('/userPayments', (req, res) => {
     })
 })
 
-app.listen(process.env.PORT || 3000, function () {
+// Socket.io for live chat
+// Client Side :
+//      To connect use baseUrl + 'chat-socket'
+//      To send message use
+//          event: chatFromClient
+//          data: {message: chatData}
+//      To recieve message use
+//          event: chatFromServer
+//          data: data.message
+
+var cns = io.of('/chat-socket')
+
+cns.on('connection', function (socket) {
+    socket.on('chatFromClient', function (data) {
+        cns.emit('chatFromServer',data)
+    })
+})
+
+http.listen(process.env.PORT || 3000, function () {
     console.log("Server started ");
 });
