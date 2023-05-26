@@ -249,10 +249,16 @@ app.get('/userPayments', (req, res) => {
 //      To connect use baseUrl + 'chat-socket'
 //      To send message use
 //          event: chatFromClient
-//          data: {message: chatData}
+//          data: {
+//                  message: chatData,
+//                  username: username
+//                }
 //      To recieve message use
 //          event: chatFromServer
-//          data: data.message
+//          data: {
+//                  message: chatData,
+//                  username: username
+//                }
 
 var cns = io.of('/chat-socket')
 
