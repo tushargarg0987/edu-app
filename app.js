@@ -161,6 +161,29 @@ app.post('/addCourse', async (req,res) => {
     }
 })
 
+app.post('/addClass', async (req, res) => {
+    Course.find({ courseId: req.body.courseId }, (err, foundCourse) => { 
+        if (foundCourse[0]) {
+            const oldClasses = foundCourse[0].classes;
+            const newClass = {
+                classId: req.body.classId,
+                classNumber: req.body.classNumber,
+                classTitle: req.body.classTitle,
+                classUrl: req.body.classUrl,
+                classChat: []
+            }
+            oldClasses.push(newClass);
+            Course.findOneAndUpdate({ courseId: req.body.courseId },{
+                classes: oldClasses
+            },null,()=>{})
+            res.send("Added");
+        }
+        else {
+            res.send('Course not found');
+        }
+    })
+})
+
 app.post('/addToChat', (req,res) => {
     Course.find({ courseId: req.body.courseId }, (err,foundCourse) => {
         if (foundCourse[0]) {
