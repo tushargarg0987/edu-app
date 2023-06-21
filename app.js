@@ -35,7 +35,9 @@ const userSchema = new mongoose.Schema({
     password: String,
     referralcode: { type: String, required: true, unique: true },
     refernumber: String,
-    courses: [String]
+    courses: [String],
+    contactNumber: String,
+    certificates: [String]
 });
 
 const courseSchema = new mongoose.Schema({
@@ -92,11 +94,23 @@ app.post("/register", async function (req, res) {
                 hashedP = hash;
                 while (flag) {
                     try {
-                        var user = new User({
-                            username: req.body.username,
-                            password: hashedP,
-                            referralcode: (Math.random() * 1000000).toFixed(0)
-                        });
+                        if (req.body.contactNumber) {
+                            var user = new User({
+                                username: req.body.username,
+                                password: hashedP,
+                                referralcode: (Math.random() * 1000000).toFixed(0),
+                                contactNumber: req.body.contactNumber,
+                                certificates: req.body.certificates ? req.body.certificates : []
+                            });
+                        }
+                        else {
+                            var user = new User({
+                                username: req.body.username,
+                                password: hashedP,
+                                referralcode: (Math.random() * 1000000).toFixed(0),
+                                certificates: req.body.certificates ? req.body.certificates : []
+                            });
+                        }
                         await user.save();
                         flag = 0;
                         res.send("Registered");
